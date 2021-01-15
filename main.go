@@ -76,7 +76,7 @@ func main() {
 
 	r.GET("/users", authMiddleware(), func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"users": "emily",
+			"users": "[emily, allen, aman, harp]",
 		})
 	})
 
