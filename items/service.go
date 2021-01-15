@@ -47,3 +47,12 @@ func (srv *itemService) DeleteItem(id uint) (bool, error) {
 	}
 	return result, nil
 }
+
+func (srv *itemService) ReadAllItems() ([]*Item, error) {
+	log.Printf("[ITEM SRV] [READ ALL ITEMS]")
+	result, err := srv.repo.readAllItems()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}

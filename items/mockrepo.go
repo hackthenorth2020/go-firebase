@@ -48,3 +48,8 @@ func (repo *itemMockRepo) deleteItem(id uint) (bool, error) {
 	delete(repo.items, id)
 	return true, nil
 }
+
+func (repo *itemMockRepo) readAllItems() ([]*Item, error) {
+
+	return nil, nil
+}

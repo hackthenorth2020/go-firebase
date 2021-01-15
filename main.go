@@ -88,6 +88,7 @@ func main() {
 	r.GET("/items/:id", authMiddleware(), readItem)
 	r.PUT("/items", authMiddleware(), updateItem)
 	r.DELETE("/items/:id", authMiddleware(), deleteItem)
+	r.GET("/items", authMiddleware(), readAllItems)
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }
