@@ -29,6 +29,10 @@ var (
 	itemSrv items.ItemService
 )
 
+const (
+	sqlConnString = "postgresql://alpha:alphakilo0001@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/corny-baboon-155.cock-test?sslmode=verify-full&sslrootcert=secrets/hackthenorth-cockroachdb.crt"
+)
+
 func main() {
 	fmt.Println("Starting Server")
 	r := gin.Default()
@@ -61,11 +65,12 @@ func main() {
 				return
 			}
 
-			log.Printf("Verified ID token: %v\n", token)
+			// log.Printf("Verified ID token: %v\n", token)
 			c.Set("token", token)
 		}
 	}
-	itemSrv = items.NewItemService()
+
+	itemSrv = items.NewItemService(sqlConnString)
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -83,6 +88,7 @@ func main() {
 	r.GET("/items/:id", authMiddleware(), readItem)
 	r.PUT("/items", authMiddleware(), updateItem)
 	r.DELETE("/items/:id", authMiddleware(), deleteItem)
+	r.GET("/items", authMiddleware(), readAllItems)
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }

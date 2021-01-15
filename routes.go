@@ -74,3 +74,15 @@ func deleteItem(c *gin.Context) {
 
 	c.JSON(200, &resp)
 }
+
+func readAllItems(c *gin.Context) {
+
+	resp, err := itemSrv.ReadAllItems()
+	if err != nil {
+		c.AbortWithError(501, err)
+		return
+	}
+
+	c.JSON(200, &resp)
+
+}

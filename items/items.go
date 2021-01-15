@@ -13,6 +13,7 @@ type ItemService interface {
 	ReadItem(uint) (*Item, error)
 	UpdateItem(*Item) (*Item, error)
 	DeleteItem(uint) (bool, error)
+	ReadAllItems() ([]*Item, error)
 }
 
 type ItemRepo interface {
@@ -20,4 +21,5 @@ type ItemRepo interface {
 	readItem(uint) (*Item, error)
 	updateItem(*Item) (*Item, error)
 	deleteItem(uint) (bool, error)
+	readAllItems() ([]*Item, error)
 }
