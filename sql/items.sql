@@ -12,3 +12,4 @@ alter table items
 	add constraint items_pk
 		primary key (id);
 
+INSERT INTO items (name, owner) VALUES (?, ?)

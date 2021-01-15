@@ -2,51 +2,68 @@ package items
 
 import (
 	"context"
-	"database/sql"
-	"errors"
+	"log"
 	"os"
 
 	"github.com/jackc/pgx/v4"
 )
 
 type itemRepo struct {
-	db *sql.DB
+	// db *pgx.Conn
+	connStr string
 }
 
 func NewItemRepo(conn string) ItemRepo {
 	return &itemRepo{
-		db: initDB(conn),
+		// db: initDB(conn),
+		connStr: conn,
 	}
 }
 
-func initDB(connStr string) *sql.DB {
+func initDB(connStr string) *pgx.Conn {
 	conn, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
-		log.Errorf("Unable to connect to database: %v\n", err)
+		log.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 	defer conn.Close(context.Background())
-	log.Printf("Connected to database: %v\n")
+	defer log.Printf("Conn closing")
+	log.Printf("Connected to database\n")
 	return conn
 }
 
 //Create item
 func (repo *itemRepo) createItem(item *Item) (*Item, error) {
-	if _, ok := repo.items[item.Id]; ok {
-		return nil, errors.New("Item with ID already exists")
+	// err := repo.db.QueryRow(context.Background(), "INSERT INTO items (name, owner) VALUES ($1, $2) RETURNING id", &item.Name, &item.Owner).Scan(&item.Id)
+	conn, err := pgx.Connect(context.Background(), repo.connStr)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
+	defer conn.Close(context.Background())
 
-	repo.items[item.Id] = item
+	err = conn.QueryRow(context.Background(), "INSERT INTO items (name, owner) VALUES ($1, $2) RETURNING id", &item.Name, &item.Owner).Scan(&item.Id)
+	if err != nil {
+		return nil, err
+	}
 
 	return item, nil
 }
 
 //Read item
 func (repo *itemRepo) readItem(id uint) (*Item, error) {
-	item, ok := repo.items[id]
+	conn, err := pgx.Connect(context.Background(), repo.connStr)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
 
-	if !ok {
-		return nil, errors.New("Item with id does not exist")
+	item := &Item{}
+	row := conn.QueryRow(context.Background(), "SELECT * FROM items WHERE id = $1", id)
+	err = row.Scan(&item.Id, &item.Name, &item.Owner)
+	if err != nil {
+		return nil, err
 	}
 
 	return item, nil
@@ -54,15 +71,34 @@ func (repo *itemRepo) readItem(id uint) (*Item, error) {
 
 //Update item
 func (repo *itemRepo) updateItem(item *Item) (*Item, error) {
-	//if item does not exist, create it as an item
+	conn, err := pgx.Connect(context.Background(), repo.connStr)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
 
-	repo.items[item.Id] = item
+	_, err = conn.Exec(context.Background(), "UPDATE (name, owner) SET name = $2, owner = $3 FROM items WHERE id = $1", &item.Id, &item.Name, &item.Owner)
+	if err != nil {
+		return nil, err
+	}
 
 	return item, nil
 }
 
 //Delete item
 func (repo *itemRepo) deleteItem(id uint) (bool, error) {
-	delete(repo.items, id)
+	conn, err := pgx.Connect(context.Background(), repo.connStr)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	_, err = conn.Exec(context.Background(), "DELETE FROM items WHERE id = $1", id)
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

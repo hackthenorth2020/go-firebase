@@ -30,7 +30,7 @@ var (
 )
 
 const (
-	sqlConnString = "postgres://bilal@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/corny-baboon-155.defaultdb?sslmode=verify-full&sslrootcert=secrets/hackthenorth-cockroachdb.crt"
+	sqlConnString = "postgresql://alpha:alphakilo0001@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/corny-baboon-155.cock-test?sslmode=verify-full&sslrootcert=secrets/hackthenorth-cockroachdb.crt"
 )
 
 func main() {
@@ -65,7 +65,7 @@ func main() {
 				return
 			}
 
-			log.Printf("Verified ID token: %v\n", token)
+			// log.Printf("Verified ID token: %v\n", token)
 			c.Set("token", token)
 		}
 	}
