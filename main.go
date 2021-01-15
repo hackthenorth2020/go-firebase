@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	firebase "firebase.google.com/go"
-	"github.com/gin-gonic/gin"
-
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"
-
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/hackthenorth2020/go-firebase/items"
 	"google.golang.org/api/option"
 )
 
@@ -24,16 +25,19 @@ Go-Firebase Template
 */
 
 var (
-	app *firebase.App
+	app     *firebase.App
+	itemSrv items.ItemService
 )
 
 func main() {
 	fmt.Println("Starting Server")
 	r := gin.Default()
+	r.Use(corsMiddleware)
 
-	app, err := initFirebase()
+	opt := option.WithCredentialsFile("secrets/vue-firebase-key.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
-		panic(err)
+		log.Fatalf("error initializing app: %v", err)
 	}
 
 	authMiddleware := func() gin.HandlerFunc {
@@ -61,6 +65,7 @@ func main() {
 			c.Set("token", token)
 		}
 	}
+	itemSrv = items.NewItemService()
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -74,20 +79,20 @@ func main() {
 		})
 	})
 
-	r.GET("/users", authMiddleware(), func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"users": "[emily, allen, aman, harp]",
-		})
-	})
+	r.POST("/items", authMiddleware(), createItem)
+	r.GET("/items/:id", authMiddleware(), readItem)
+	r.PUT("/items", authMiddleware(), updateItem)
+	r.DELETE("/items/:id", authMiddleware(), deleteItem)
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }
 
-func initFirebase() (*firebase.App, error) {
-	opt := option.WithCredentialsFile("secrets/vue-firebase-key.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing app: %v", err)
-	}
-	return app, nil
-}
+var corsMiddleware = cors.New(cors.Config{
+	// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
+	AllowOrigins: []string{"*"},
+	AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+	// AllowMethods:     []string{"*"},
+	AllowHeaders:     []string{"Authorization", "Origin", "Content-Length", "Content-Type"},
+	AllowCredentials: true,
+	MaxAge:           12 * time.Hour,
+})
