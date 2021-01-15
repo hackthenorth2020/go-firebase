@@ -29,6 +29,10 @@ var (
 	itemSrv items.ItemService
 )
 
+const (
+	sqlConnString = "postgres://bilal@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/corny-baboon-155.defaultdb?sslmode=verify-full&sslrootcert=secrets/hackthenorth-cockroachdb.crt"
+)
+
 func main() {
 	fmt.Println("Starting Server")
 	r := gin.Default()
@@ -65,7 +69,8 @@ func main() {
 			c.Set("token", token)
 		}
 	}
-	itemSrv = items.NewItemService()
+
+	itemSrv = items.NewItemService(sqlConnString)
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

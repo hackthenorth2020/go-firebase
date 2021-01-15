@@ -4,9 +4,9 @@ type itemService struct {
 	repo ItemRepo
 }
 
-func NewItemService() ItemService {
+func NewItemService(conn string) ItemService {
 	return &itemService{
-		repo: NewItemMockRepo(),
+		repo: NewItemRepo(conn),
 	}
 }
 
