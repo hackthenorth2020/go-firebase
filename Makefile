@@ -1,16 +1,16 @@
 build:
-	DOCKER_BUILDKIT=1 docker build -t go-firebase .
+	DOCKER_BUILDKIT=1 docker build -t htn-backend .
 
 pull:
-	sudo docker pull eecs4312basedcode/go-firebase
+	docker pull alphakilo07/htn-backend
 
 push:
-	sudo docker tag go-firebase teamdn-htn/go-firebase
-	docker push eecs4312basedcode/go-firebase
+	docker tag htn-backend alphakilo07/htn-backend
+	docker push alphakilo07/htn-backend
 
 run:
-	sudo docker run  --rm -d -p 8081:8081 -e PORT='8081' \
-		--name go-firebase go-firebase
+	docker run  --rm -d -p 8081:8081 -e PORT='8081' \
+		--name htn-backend htn-backend
 
 kill:
-	sudo docker kill go-firebase
+	docker kill htn-backend
